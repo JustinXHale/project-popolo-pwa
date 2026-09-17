@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function role() {
+      return signedIn() ? userDoc().role : '';
+    }
+
+    function isAdmin() {
+      return signedIn() && role() == 'admin';
+    }
+
+    function isCoach() {
+      return signedIn() && role() == 'coach';
+    }
+
+    function isStaff() {
+      return isAdmin() || isCoach();
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isStaff();
+      allow create: if isSelf(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'referee'
+        && request.resource.data.onboardingComplete == false;
+      allow update: if isAdmin()
+        || (isSelf(uid)
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.role == resource.data.role
+            && (
+              (resource.data.onboardingComplete != true
+                && request.resource.data.onboardingComplete == true
+                && request.resource.data.role == 'referee')
+              || resource.data.onboardingComplete == true
+            ));
+      allow delete: if isAdmin() || isSelf(uid);
+    }
+
+    match /refereeProfiles/{id} {
+      allow read: if resource.data.published == true || isStaff()
+        || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isStaff()
+        || (signedIn() && resource.data.ownerUid == request.auth.uid
+            && request.resource.data.ownerUid == resource.data.ownerUid
+            && request.resource.data.published == resource.data.published);
+      allow delete: if isAdmin()
+        || (signedIn() && resource.data.ownerUid == request.auth.uid);
+    }
+
+    function ownsReferee(refereeId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/refereeProfiles/$(refereeId))
+        && get(/databases/$(database)/documents/refereeProfiles/$(refereeId)).data.ownerUid == request.auth.uid;
+    }
+
+    match /games/{id} {
+      allow read: if resource.data.published == true || isStaff()
+        || ownsReferee(resource.data.refereeId);
+      allow create: if isStaff() || ownsReferee(request.resource.data.refereeId);
+      allow update, delete: if isStaff()
+        || (signedIn() && request.auth.uid == resource.data.createdByUid)
+        || ownsReferee(resource.data.refereeId);
+    }
+
+    match /documents/{id} {
+      allow read: if resource.data.published == true || isStaff()
+        || (signedIn() && resource.data.uploadedByUid == request.auth.uid);
+      allow create: if signedIn();
+      allow update, delete: if isStaff()
+        || (signedIn() && resource.data.uploadedByUid == request.auth.uid);
+    }
+
+    match /mediaSubmissions/{id} {
+      allow read: if isStaff()
+        || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isStaff()
+        || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow delete: if isStaff()
+        || (signedIn() && resource.data.ownerUid == request.auth.uid);
+    }
+
+    match /serviceRequests/{id} {
+      allow read: if isStaff();
+      allow create: if true;
+      allow update, delete: if isStaff();
+    }
+
+    match /contactMessages/{id} {
+      allow read: if isStaff();
+      allow create: if true;
+      allow delete: if isAdmin();
+    }
+
+    match /siteSettings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /eventApplications/{id} {
+      allow read: if isStaff()
+        || (signedIn() && resource.data.submittedByUid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'eventSlug', 'eventTitle', 'firstName', 'lastName', 'email', 'phone',
+          'mailingAddress', 'yearsOfficiating', 'divisionCodes', 'positions',
+          'refereeSociety', 'highestSevensCompetition', 'highestSevensScope',
+          'status', 'createdAt', 'submittedByUid'
+        ])
+        && request.resource.data.submittedByUid == request.auth.uid
+        && request.resource.data.status == 'submitted'
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() < 80
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() > 0
+        && request.resource.data.lastName.size() < 80
+        && request.resource.data.email is string
+        && request.resource.data.positions is list
+        && request.resource.data.positions.size() > 0
+        && request.resource.data.divisionCodes is list;
+      allow update, delete: if isStaff();
+    }
+  }
+}

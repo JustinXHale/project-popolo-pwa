@@ -1,0 +1,71 @@
+:root {
+  --color-bg: #0c0c0c;
+  --color-bg-elevated: #161616;
+  --color-bg-surface: #1f1c18;
+  --color-bg-paper: #f3ece1;
+  --color-bg-dark: #0c0c0c;
+  --color-bg-dark-elevated: #161616;
+
+  --color-text: #f3ece1;
+  --color-text-secondary: #c9c0b3;
+  --color-text-muted: #9a9186;
+  --color-text-on-paper: #14110e;
+  --color-text-on-paper-secondary: #4a453e;
+  --color-text-on-dark: #f3ece1;
+  --color-text-on-dark-secondary: #c9c0b3;
+
+  --color-brand-primary: #e2b039;
+  --color-brand-primary-hover: #f0c45a;
+  --color-brand-primary-rgb: 226, 176, 57;
+  --color-brand-ink: #0c0c0c;
+  --color-text-on-brand: #14110e;
+
+  /* Gold is for dark surfaces only. On paper it fails contrast. */
+  --color-link: #f0c45a;
+  --color-link-hover: #f6d98a;
+  --color-link-on-dark: #f0c45a;
+  --color-link-on-paper: #5c3e0a;
+  --color-link-on-paper-hover: #14110e;
+
+  --color-success: #7ed09a;
+  --color-warning: #e2b039;
+  --color-error: #ff7a70;
+
+  --color-border: rgba(243, 236, 225, 0.12);
+  --color-border-strong: rgba(243, 236, 225, 0.28);
+  --color-focus: #e2b039;
+  --color-overlay: rgba(12, 12, 12, 0.55);
+
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Figtree', system-ui, sans-serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 4px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 18px 40px rgba(0, 0, 0, 0.45);
+
+  --max-width: 1180px;
+  --header-height: 4.5rem;
+
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+  }
+}

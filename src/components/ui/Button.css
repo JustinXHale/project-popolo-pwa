@@ -1,0 +1,103 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+a.btn:link,
+a.btn:visited,
+a.btn:hover,
+a.btn:active,
+a.btn:focus {
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn--sm {
+  padding: 0.45rem 0.9rem;
+}
+
+.btn--md {
+  padding: 0.75rem 1.25rem;
+}
+
+.btn--lg {
+  padding: 0.95rem 1.6rem;
+}
+
+.btn--primary,
+a.btn.btn--primary,
+a.btn.btn--primary:link,
+a.btn.btn--primary:visited,
+a.btn.btn--primary:hover,
+a.btn.btn--primary:active,
+a.btn.btn--primary:focus {
+  background: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+.btn--primary:hover:not(:disabled),
+a.btn.btn--primary:hover:not(:disabled) {
+  background: var(--color-brand-primary-hover);
+  color: var(--color-text-on-brand);
+}
+
+.btn--secondary,
+a.btn.btn--secondary,
+a.btn.btn--secondary:link,
+a.btn.btn--secondary:visited {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.btn--secondary:hover:not(:disabled),
+a.btn.btn--secondary:hover:not(:disabled) {
+  border-color: var(--color-text);
+  color: var(--color-text);
+}
+
+.btn--ghost,
+a.btn.btn--ghost,
+a.btn.btn--ghost:link,
+a.btn.btn--ghost:visited {
+  background: transparent;
+  color: var(--color-text);
+}
+
+.btn--ghost:hover:not(:disabled),
+a.btn.btn--ghost:hover:not(:disabled) {
+  color: var(--color-brand-primary);
+}
+
+.btn--danger,
+a.btn.btn--danger {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.btn--primary:focus-visible,
+.btn--secondary:focus-visible,
+.btn--ghost:focus-visible,
+.btn--danger:focus-visible {
+  outline: 3px solid var(--color-text);
+  outline-offset: 3px;
+}

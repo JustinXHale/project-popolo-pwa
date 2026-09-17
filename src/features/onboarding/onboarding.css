@@ -1,0 +1,329 @@
+.rs-onboard {
+  display: flex;
+  flex-direction: column;
+  min-height: min(70vh, 36rem);
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.rs-onboard__track {
+  height: 3px;
+  margin: 0 0 1.75rem;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.rs-onboard__track-fill {
+  height: 100%;
+  background: var(--color-brand-primary);
+  border-radius: inherit;
+  transition: width var(--transition-base);
+}
+
+.rs-onboard__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: rs-onboard-in 0.32s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rs-onboard__panel {
+    animation: none;
+  }
+
+  .rs-onboard__track-fill {
+    transition: none;
+  }
+}
+
+@keyframes rs-onboard-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rs-onboard__count {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-brand-primary);
+}
+
+.rs-onboard__question {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 5vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.rs-onboard__hint {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.rs-onboard__answer .field {
+  margin-bottom: 0.65rem;
+}
+
+.rs-onboard__answer .entry-list {
+  margin-top: 0.15rem;
+}
+
+.rs-onboard__input.field__control {
+  font-size: 1.05rem;
+}
+
+.rs-onboard__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.rs-onboard__choice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.rs-onboard__choice:hover,
+.rs-onboard__choice:focus-visible {
+  border-color: var(--color-text);
+  outline: none;
+}
+
+.rs-onboard__choice--selected {
+  border-color: var(--color-brand-primary);
+  background: color-mix(in srgb, var(--color-brand-primary) 12%, var(--color-bg-elevated));
+}
+
+.rs-onboard__check {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-on-brand);
+}
+
+.rs-onboard__check--on {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+}
+
+.rs-onboard__choice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.rs-onboard__choice strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.rs-onboard__choice-text > span {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.rs-onboard__levels {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.rs-onboard__size {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: 3.6rem;
+  margin: 0;
+  padding: 0.45rem 0.2rem;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.rs-onboard__size strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rs-onboard__size span {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.rs-onboard__size:hover,
+.rs-onboard__size:focus-visible {
+  border-color: var(--color-text);
+  outline: none;
+}
+
+.rs-onboard__size--selected {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+.rs-onboard__size--selected span {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.rs-onboard__unknown {
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rs-onboard__unknown:hover,
+.rs-onboard__unknown:focus-visible {
+  border-color: var(--color-text);
+  color: var(--color-text);
+  outline: none;
+}
+
+.rs-onboard__unknown--selected {
+  border-color: var(--color-brand-primary);
+  color: var(--color-text);
+  background: color-mix(
+    in srgb,
+    var(--color-brand-primary) 12%,
+    var(--color-bg-elevated)
+  );
+}
+
+.rs-onboard__place {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rs-onboard__photo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rs-onboard-page__later {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+}
+
+.rs-onboard__photo-preview {
+  width: 7.5rem;
+  aspect-ratio: 3 / 4;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+}
+
+.rs-onboard__check--on::after {
+  content: '';
+  width: 0.32rem;
+  height: 0.55rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+.rs-onboard__photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.rs-onboard__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.rs-onboard__back {
+  margin: 0;
+  padding: 0.5rem 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.rs-onboard__back:hover,
+.rs-onboard__back:focus-visible {
+  color: var(--color-text);
+  outline: none;
+}
+
+.rs-onboard__nav-end {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rs-onboard__enter {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.rs-onboard__error {
+  color: var(--color-error);
+  font-weight: 700;
+}

@@ -1,0 +1,61 @@
+.match-log-form {
+  max-width: 44rem;
+}
+
+.match-log-form input.field__control:not([type='file']),
+.match-log-form select.field__control {
+  height: 3.25rem;
+  min-height: 3.25rem;
+  box-sizing: border-box;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.match-log-form__row {
+  display: grid;
+  gap: var(--space-3);
+  align-items: start;
+  margin-bottom: var(--space-4);
+}
+
+.match-log-form__row .field {
+  margin-bottom: 0;
+}
+
+.match-log-form__row--title {
+  grid-template-columns: minmax(0, 1fr) minmax(13.5rem, 16rem);
+}
+
+.match-log-form__row--meta {
+  grid-template-columns: 1fr 1.2fr 1fr;
+}
+
+.match-log-form__row--class {
+  grid-template-columns: minmax(9.5rem, 1fr) minmax(10rem, 1fr) minmax(8rem, 9.5rem);
+}
+
+.match-log-form__row--eval {
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 15rem);
+}
+
+.match-log-form__spacer {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .match-log-form__row--title,
+  .match-log-form__row--meta,
+  .match-log-form__row--class,
+  .match-log-form__row--eval {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .match-log-form__row--title,
+  .match-log-form__row--meta,
+  .match-log-form__row--class,
+  .match-log-form__row--eval {
+    grid-template-columns: 1fr;
+  }
+}

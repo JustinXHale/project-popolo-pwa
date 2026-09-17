@@ -1,0 +1,52 @@
+.social-signin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font: 600 1rem/1.2 var(--font-body, system-ui, sans-serif);
+  cursor: pointer;
+}
+
+.social-signin-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.social-signin-btn--google {
+  color: #1f1f1f;
+  background: #fff;
+  border-color: #747775;
+}
+
+.social-signin-btn--apple {
+  color: #fff;
+  background: #111;
+  border-color: #111;
+}
+
+.social-signin-btn__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #dadce0;
+  border-top-color: #1f1f1f;
+  border-radius: 50%;
+  animation: social-signin-spin 0.7s linear infinite;
+}
+
+@keyframes social-signin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-page__providers {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: var(--space-4);
+  max-width: 22rem;
+}

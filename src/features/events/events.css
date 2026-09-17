@@ -1,0 +1,157 @@
+.events-index {
+  max-width: 52rem;
+}
+
+.event-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.event-card {
+  display: grid;
+  gap: var(--space-4);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.event-card__photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+}
+
+.event-card__body {
+  padding: var(--space-5);
+}
+
+.event-card__body h2 {
+  margin-bottom: var(--space-2);
+}
+
+.event-card__body h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.event-card__body h2 a:hover,
+.event-card__body h2 a:focus-visible {
+  color: var(--color-brand-primary);
+  text-decoration: underline;
+}
+
+.event-card__when {
+  margin: 0 0 var(--space-3);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.event-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: var(--space-4);
+}
+
+.event-card__closed {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+}
+
+.event-detail {
+  max-width: 42rem;
+}
+
+.event-detail__cta {
+  margin-top: var(--space-6);
+}
+
+.apply-form-page {
+  max-width: 40rem;
+}
+
+.apply-form-page__back {
+  margin: 0 0 var(--space-3);
+  font-size: 0.9rem;
+}
+
+.apply-form-page__back a {
+  color: var(--color-text-secondary);
+}
+
+.apply-form h1 {
+  margin-bottom: 0.35rem;
+}
+
+.apply-form__row {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr 1fr;
+}
+
+.apply-form__row--align-start {
+  align-items: start;
+}
+
+.apply-form__row--align-start .apply-fieldset {
+  margin-bottom: 0;
+}
+
+.apply-form__error {
+  color: var(--color-error);
+}
+
+.apply-form__fine {
+  font-size: 0.85rem;
+}
+
+.apply-fieldset {
+  margin: 0 0 var(--space-4);
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.apply-fieldset legend {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 0.35rem;
+}
+
+.apply-fieldset__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.apply-checks {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.apply-check {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .event-card__body {
+    padding-inline: var(--space-4);
+  }
+}
+
+@media (max-width: 520px) {
+  .apply-form__row {
+    grid-template-columns: 1fr;
+  }
+}

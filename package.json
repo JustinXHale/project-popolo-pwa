@@ -1,0 +1,36 @@
+{
+  "name": "project-popolo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "emulators": "firebase emulators:start --import=./.firebase-emulator-data --export-on-exit",
+    "deploy": "npm run build && firebase deploy --project rabbitholeapps",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting --project rabbitholeapps",
+    "deploy:rules": "firebase deploy --only firestore:rules --project rabbitholeapps",
+    "deploy:storage": "firebase deploy --only storage --project rabbitholeapps",
+    "env:sync": "node scripts/sync-firebase-env.mjs"
+  },
+  "dependencies": {
+    "firebase": "^12.17.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "firebase-admin": "^13.10.0",
+    "firebase-tools": "^15.25.1",
+    "oxlint": "^1.75.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}
