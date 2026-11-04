@@ -132,7 +132,7 @@ function FormEditor({
               REQUIRED_IDENTITY_QUESTIONS.has(question.id) ||
               question.required,
             hint,
-            ...(usesOptions && options?.length ? { options } : {}),
+            ...(usesOptions ? { options: options ?? [] } : {}),
           }
         }),
         updatedAt: new Date().toISOString(),
@@ -211,6 +211,34 @@ function FormEditor({
                 />
                 Required
               </label>
+              {question.options ? (
+                question.id === 'divisionCodes' ? (
+                  <Field
+                    label="Division options"
+                    htmlFor={`${question.id}-options`}
+                    hint="Enter one division per line. These choices appear on this event’s application."
+                  >
+                    <TextTextarea
+                      id={`${question.id}-options`}
+                      value={question.options.join('\n')}
+                      onChange={(event) =>
+                        updateQuestion(question.id, {
+                          options: event.target.value.split('\n'),
+                        })
+                      }
+                    />
+                  </Field>
+                ) : (
+                  <div className="admin-form-builder__options">
+                    <span>Current options</span>
+                    <ul>
+                      {question.options.map((option) => (
+                        <li key={option}>{option}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              ) : null}
             </div>
           ))}
       </div>

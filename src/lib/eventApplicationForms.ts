@@ -167,13 +167,19 @@ export function resolveEventApplicationForm(
   }
 
   const savedById = new Map(saved.questions.map((question) => [question.id, question]))
-  const core = defaults.map((question) => ({
-    ...question,
-    ...savedById.get(question.id),
-    id: question.id,
-    type: question.type,
-    options: question.options,
-  }))
+  const core = defaults.map((question) => {
+    const savedQuestion = savedById.get(question.id)
+    return {
+      ...question,
+      ...savedQuestion,
+      id: question.id,
+      type: question.type,
+      options:
+        question.id === 'divisionCodes'
+          ? savedQuestion?.options ?? question.options
+          : question.options,
+    }
+  })
   const custom = saved.questions.filter(
     (question) => !isCoreApplicationQuestion(question.id),
   )

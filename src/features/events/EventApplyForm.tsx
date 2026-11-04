@@ -194,6 +194,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
   const customQuestions = formDefinition.questions.filter(
     (item) => !isCoreApplicationQuestion(item.id),
   )
+  const divisionOptions = question('divisionCodes').options ?? event.divisions
 
   if (existing) {
     return (
@@ -231,7 +232,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
       const positions = EVENT_CREW_ROLES.filter(
         (role) => fd.get(`position_${role}`) === 'on',
       )
-      const divisionCodes = event.divisions.filter(
+      const divisionCodes = divisionOptions.filter(
         (division) => fd.get(`division_${division}`) === 'on',
       )
 
@@ -240,7 +241,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
       }
       if (
         question('divisionCodes').required &&
-        event.divisions.length > 0 &&
+        divisionOptions.length > 0 &&
         divisionCodes.length === 0
       ) {
         throw new Error('Select at least one division.')
@@ -545,7 +546,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
         </div>
 
         <div className="apply-form__row apply-form__row--align-start">
-          {event.divisions.length ? (
+          {divisionOptions.length ? (
             <fieldset className="apply-fieldset">
               <legend>{question('divisionCodes').label}</legend>
               <p className="apply-fieldset__hint">
@@ -553,7 +554,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
                   `These brackets are for ${event.title}.`}
               </p>
               <div className="apply-checks">
-                {event.divisions.map((division) => (
+                {divisionOptions.map((division) => (
                   <label key={division} className="apply-check">
                     <input type="checkbox" name={`division_${division}`} />
                     {division}
