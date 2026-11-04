@@ -1,5 +1,5 @@
 import { Button } from '../../components/ui/Button'
-import { TextSelect } from '../../components/ui/Field'
+import { Field, TextSelect } from '../../components/ui/Field'
 import { useAuth } from '../../context/auth-context'
 import { useData } from '../../context/data-context'
 import { GamesForm } from '../games/GamesForm'
@@ -486,67 +486,135 @@ export function AdminSitePages() {
 export function AdminEventApplicationsPage() {
   const { eventApplications, updateEventApplicationStatus } = useData()
   const [selected, setSelected] = useState<EventApplicationDoc | null>(null)
-  const rows = [...eventApplications].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  )
+  const [eventFilter, setEventFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState<
+    EventApplicationStatus | 'all'
+  >('all')
+  const events = [
+    ...new Map(
+      eventApplications.map((app) => [app.eventSlug, app.eventTitle]),
+    ).entries(),
+  ].sort((a, b) => a[1].localeCompare(b[1]))
+  const rows = eventApplications
+    .filter(
+      (app) =>
+        (eventFilter === 'all' || app.eventSlug === eventFilter) &&
+        (statusFilter === 'all' || app.status === statusFilter),
+    )
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   const open = rows.find((app) => app.id === selected?.id) ?? null
 
   return (
     <div>
       <h1>Event applications</h1>
       <p>Referee applications from public event pages.</p>
-      {rows.length === 0 ? (
-        <p>No referee applications yet.</p>
-      ) : (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Event</th>
-              <th>Society</th>
-              <th>Status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((app) => (
-              <tr key={app.id}>
-                <td>
-                  {app.firstName} {app.lastName}
-                  <div>{app.email}</div>
-                </td>
-                <td>{app.eventTitle}</td>
-                <td>{app.refereeSociety || '—'}</td>
-                <td>
-                  <TextSelect
-                    value={app.status}
-                    onChange={(e) =>
-                      void updateEventApplicationStatus(
-                        app.id,
-                        e.target.value as EventApplicationStatus,
-                      )
-                    }
-                  >
-                    {EVENT_APPLICATION_STATUSES.map((status) => (
-                      <option key={status} value={status}>
-                        {EVENT_APPLICATION_STATUS_LABELS[status]}
-                      </option>
-                    ))}
-                  </TextSelect>
-                </td>
-                <td>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setSelected(app)}
-                  >
-                    View
-                  </Button>
-                </td>
-              </tr>
+      <div className="admin-event-apps__summary" aria-live="polite">
+        <strong>Total applicants: {eventApplications.length}</strong>
+        {rows.length !== eventApplications.length ? (
+          <span>Showing {rows.length}</span>
+        ) : null}
+      </div>
+      <div className="admin-event-apps__filters">
+        <Field label="Event" htmlFor="event-application-event-filter">
+          <TextSelect
+            id="event-application-event-filter"
+            value={eventFilter}
+            onChange={(e) => setEventFilter(e.target.value)}
+          >
+            <option value="all">All events</option>
+            {events.map(([slug, title]) => (
+              <option key={slug} value={slug}>
+                {title}
+              </option>
             ))}
-          </tbody>
-        </table>
+          </TextSelect>
+        </Field>
+        <Field label="Status" htmlFor="event-application-status-filter">
+          <TextSelect
+            id="event-application-status-filter"
+            value={statusFilter}
+            onChange={(e) =>
+              setStatusFilter(
+                e.target.value as EventApplicationStatus | 'all',
+              )
+            }
+          >
+            <option value="all">All statuses</option>
+            {EVENT_APPLICATION_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {EVENT_APPLICATION_STATUS_LABELS[status]}
+              </option>
+            ))}
+          </TextSelect>
+        </Field>
+      </div>
+      {eventApplications.length === 0 ? (
+        <p>No referee applications yet.</p>
+      ) : rows.length === 0 ? (
+        <p>No applications match these filters.</p>
+      ) : (
+        <div className="table-scroll">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Event</th>
+                <th>Society</th>
+                <th>Status</th>
+                <th></th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((app) => (
+                <tr
+                  key={app.id}
+                  className={
+                    app.status === 'accepted'
+                      ? 'admin-table__row--accepted'
+                      : undefined
+                  }
+                >
+                  <td>
+                    {app.firstName} {app.lastName}
+                  </td>
+                  <td>{app.eventTitle}</td>
+                  <td>{app.refereeSociety || '—'}</td>
+                  <td>
+                    <TextSelect
+                      aria-label={`Status for ${app.firstName} ${app.lastName}`}
+                      value={app.status}
+                      onChange={(e) =>
+                        void updateEventApplicationStatus(
+                          app.id,
+                          e.target.value as EventApplicationStatus,
+                        )
+                      }
+                    >
+                      {EVENT_APPLICATION_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                          {EVENT_APPLICATION_STATUS_LABELS[status]}
+                        </option>
+                      ))}
+                    </TextSelect>
+                  </td>
+                  <td>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => setSelected(app)}
+                    >
+                      View
+                    </Button>
+                  </td>
+                  <td>
+                    <a href={`mailto:${app.email}`}>Email</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {open ? (
         <AdminEventApplicationDetail

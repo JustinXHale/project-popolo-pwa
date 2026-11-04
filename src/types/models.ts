@@ -215,6 +215,7 @@ export const REFEREE_POSITION_LABELS: Record<RefereePosition, string> = {
 export type HighestCompetition =
   | 'localClub'
   | 'highSchoolU18'
+  | 'collegiate'
   | 'mensWomensQualifiers'
   | 'nationalMensWomens'
   | 'hsbcWorldSeries'
@@ -223,6 +224,7 @@ export type HighestCompetition =
 export const HIGHEST_COMPETITIONS: HighestCompetition[] = [
   'localClub',
   'highSchoolU18',
+  'collegiate',
   'mensWomensQualifiers',
   'nationalMensWomens',
   'hsbcWorldSeries',
@@ -232,6 +234,7 @@ export const HIGHEST_COMPETITIONS: HighestCompetition[] = [
 export const HIGHEST_COMPETITION_LABELS: Record<HighestCompetition, string> = {
   localClub: 'Local / club',
   highSchoolU18: 'High school / U18',
+  collegiate: 'Collegiate',
   mensWomensQualifiers: "Men's or Women's qualifiers",
   nationalMensWomens: "National Men's or Women's",
   hsbcWorldSeries: 'HSBC / World Rugby',
