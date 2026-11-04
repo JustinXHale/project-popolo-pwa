@@ -4,6 +4,7 @@ import { useAuth } from '../../context/auth-context'
 import { useData } from '../../context/data-context'
 import { GamesForm } from '../games/GamesForm'
 import { AdminEventApplicationDetail } from '../../components/admin/AdminEventApplicationDetail'
+import { AdminEventApplicationForms } from '../../components/admin/AdminEventApplicationForms'
 import { useState } from 'react'
 import {
   DOCUMENT_TYPE_LABELS,
@@ -483,7 +484,7 @@ export function AdminSitePages() {
   )
 }
 
-export function AdminEventApplicationsPage() {
+function AdminEventApplicationsList() {
   const { eventApplications, updateEventApplicationStatus } = useData()
   const [selected, setSelected] = useState<EventApplicationDoc | null>(null)
   const [eventFilter, setEventFilter] = useState('all')
@@ -506,7 +507,6 @@ export function AdminEventApplicationsPage() {
 
   return (
     <div>
-      <h1>Event applications</h1>
       <p>Referee applications from public event pages.</p>
       <div className="admin-event-apps__summary" aria-live="polite">
         <strong>Total applicants: {eventApplications.length}</strong>
@@ -625,6 +625,41 @@ export function AdminEventApplicationsPage() {
           onClose={() => setSelected(null)}
         />
       ) : null}
+    </div>
+  )
+}
+
+export function AdminEventApplicationsPage() {
+  const [tab, setTab] = useState<'applications' | 'forms'>('applications')
+
+  return (
+    <div>
+      <h1>Event applications</h1>
+      <div className="admin-subtabs" role="tablist" aria-label="Event apps">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'applications'}
+          className={tab === 'applications' ? 'is-active' : undefined}
+          onClick={() => setTab('applications')}
+        >
+          Applications
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'forms'}
+          className={tab === 'forms' ? 'is-active' : undefined}
+          onClick={() => setTab('forms')}
+        >
+          Forms
+        </button>
+      </div>
+      {tab === 'applications' ? (
+        <AdminEventApplicationsList />
+      ) : (
+        <AdminEventApplicationForms />
+      )}
     </div>
   )
 }

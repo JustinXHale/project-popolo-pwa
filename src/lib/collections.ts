@@ -7,6 +7,7 @@ import type {
   ContactMessageDoc,
   DocumentDoc,
   EventApplicationDoc,
+  EventApplicationFormDoc,
   GameDoc,
   MediaSubmissionDoc,
   RefereeProfileDoc,
@@ -38,4 +39,8 @@ export const cols = {
     db,
     'eventApplications',
   ) as CollectionReference<EventApplicationDoc>,
+  eventApplicationForms: collection(
+    db,
+    'eventApplicationForms',
+  ) as CollectionReference<EventApplicationFormDoc>,
 }

@@ -23,6 +23,11 @@ function DetailRow({ label, children }: { label: string; children: ReactNode }) 
   )
 }
 
+function formatAnswer(value: string | number | string[] | undefined) {
+  if (Array.isArray(value)) return value.join(', ')
+  return value
+}
+
 export function AdminEventApplicationDetail({
   app,
   onStatusChange,
@@ -149,6 +154,11 @@ export function AdminEventApplicationDetail({
               </a>
             ) : null}
           </DetailRow>
+          {(app.questionSnapshot ?? []).map((question) => (
+            <DetailRow key={question.id} label={question.label}>
+              {formatAnswer(app.answers?.[question.id])}
+            </DetailRow>
+          ))}
           <DetailRow label="Submitted">
             {new Date(app.createdAt).toLocaleString()}
           </DetailRow>

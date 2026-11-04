@@ -106,6 +106,102 @@
   background: color-mix(in srgb, #2e7d32 22%, var(--color-bg-elevated));
 }
 
+.admin-subtabs {
+  display: flex;
+  gap: 0;
+  margin: 0 0 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-subtabs button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 0.7rem 1rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-subtabs button.is-active {
+  border-bottom-color: var(--color-brand-primary);
+  color: var(--color-text);
+}
+
+.admin-form-builder__event-select {
+  max-width: 24rem;
+}
+
+.admin-form-builder__heading,
+.admin-form-builder__section-heading,
+.admin-form-builder__question-heading,
+.admin-form-builder__question-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-form-builder__heading {
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.admin-form-builder__heading h2,
+.admin-form-builder__section-heading h3 {
+  margin-bottom: 0.25rem;
+}
+
+.admin-form-builder__heading p,
+.admin-form-builder__section-heading p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.admin-form-builder__section-heading {
+  margin-top: 2rem;
+  align-items: flex-end;
+}
+
+.admin-form-builder__questions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-form-builder__question {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+}
+
+.admin-form-builder__question-heading {
+  margin-bottom: 0.75rem;
+}
+
+.admin-form-builder__question-heading > span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.admin-form-builder__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-form-builder__row--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-form-builder__required {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
 .admin-detail {
   position: fixed;
   inset: 0;
@@ -220,6 +316,11 @@
   }
 
   .admin-event-apps__filters {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form-builder__row,
+  .admin-form-builder__row--3 {
     grid-template-columns: 1fr;
   }
 }

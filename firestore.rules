@@ -132,9 +132,13 @@ service cloud.firestore {
         && request.resource.data.lastName.size() < 80
         && request.resource.data.email is string
         && request.resource.data.positions is list
-        && request.resource.data.positions.size() > 0
         && request.resource.data.divisionCodes is list;
       allow update, delete: if isStaff();
+    }
+
+    match /eventApplicationForms/{eventSlug} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

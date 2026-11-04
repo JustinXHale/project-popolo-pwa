@@ -3,6 +3,7 @@ import type {
   ContactMessageDoc,
   DocumentDoc,
   EventApplicationDoc,
+  EventApplicationFormDoc,
   EventApplicationStatus,
   GameDoc,
   MediaSubmissionDoc,
@@ -23,6 +24,7 @@ export interface PopoloData {
   requests: ServiceRequestDoc[]
   messages: ContactMessageDoc[]
   eventApplications: EventApplicationDoc[]
+  eventApplicationForms: EventApplicationFormDoc[]
   sitePages: Record<SitePageKey, boolean>
 }
 
@@ -45,6 +47,7 @@ export interface DataContextValue extends PopoloData {
     id: string,
     status: EventApplicationStatus,
   ) => Promise<void>
+  saveEventApplicationForm: (form: EventApplicationFormDoc) => Promise<void>
   updateSitePages: (
     pages: Partial<Record<SitePageKey, boolean>>,
   ) => Promise<void>

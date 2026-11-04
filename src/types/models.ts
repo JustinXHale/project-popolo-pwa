@@ -682,9 +682,41 @@ export interface EventApplicationDoc {
   highestSevensScope: CompetitionLevel
   highestSevensNotes?: string
   matchFootageUrl?: string
+  answers?: Record<string, string | number | string[]>
+  questionSnapshot?: EventApplicationQuestionSnapshot[]
   status: EventApplicationStatus
   submittedByUid?: string
   createdAt: string
+  updatedAt: string
+}
+
+export type EventApplicationQuestionType =
+  | 'shortText'
+  | 'longText'
+  | 'number'
+  | 'select'
+  | 'checkboxes'
+  | 'url'
+  | 'address'
+
+export interface EventApplicationQuestion {
+  id: string
+  label: string
+  hint?: string
+  type: EventApplicationQuestionType
+  required: boolean
+  options?: string[]
+}
+
+export interface EventApplicationQuestionSnapshot {
+  id: string
+  label: string
+  type: EventApplicationQuestionType
+}
+
+export interface EventApplicationFormDoc {
+  eventSlug: string
+  questions: EventApplicationQuestion[]
   updatedAt: string
 }
 

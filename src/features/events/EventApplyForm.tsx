@@ -10,6 +10,10 @@ import {
 import { useAuth } from '../../context/auth-context'
 import { useData } from '../../context/data-context'
 import {
+  isCoreApplicationQuestion,
+  resolveEventApplicationForm,
+} from '../../lib/eventApplicationForms'
+import {
   formatEventDeadline,
   formatEventWhen,
   CONTENT_EVENTS,
@@ -31,10 +35,77 @@ import {
   normalizeHttpUrl,
   type CompetitionLevel,
   type EventCrewRole,
+  type EventApplicationQuestion,
   type HighestCompetition,
   type RefereePosition,
 } from '../../types/models'
 import './events.css'
+
+function CustomApplicationQuestion({
+  question,
+}: {
+  question: EventApplicationQuestion
+}) {
+  const name = `answer_${question.id}`
+  if (question.type === 'checkboxes') {
+    return (
+      <fieldset className="apply-fieldset">
+        <legend>{question.label}</legend>
+        {question.hint ? (
+          <p className="apply-fieldset__hint">{question.hint}</p>
+        ) : null}
+        <div className="apply-checks">
+          {(question.options ?? []).map((option) => (
+            <label key={option} className="apply-check">
+              <input type="checkbox" name={name} value={option} />
+              {option}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    )
+  }
+
+  if (question.type === 'select') {
+    return (
+      <Field label={question.label} htmlFor={name} hint={question.hint}>
+        <TextSelect id={name} name={name} required={question.required}>
+          <option value="">Select an option</option>
+          {(question.options ?? []).map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </TextSelect>
+      </Field>
+    )
+  }
+
+  if (question.type === 'longText') {
+    return (
+      <Field label={question.label} htmlFor={name} hint={question.hint}>
+        <TextTextarea id={name} name={name} required={question.required} />
+      </Field>
+    )
+  }
+
+  return (
+    <Field label={question.label} htmlFor={name} hint={question.hint}>
+      <TextInput
+        id={name}
+        name={name}
+        required={question.required}
+        type={
+          question.type === 'number'
+            ? 'number'
+            : question.type === 'url'
+              ? 'url'
+              : 'text'
+        }
+      />
+    </Field>
+  )
+}
 
 function TournamentSelect({
   event,
@@ -84,7 +155,12 @@ function crewRolesFromProfile(positions: RefereePosition[]): EventCrewRole[] {
 }
 
 export function EventApplyForm({ event }: { event: ContentEvent }) {
-  const { eventApplications, profiles, submitEventApplication } = useData()
+  const {
+    eventApplications,
+    eventApplicationForms,
+    profiles,
+    submitEventApplication,
+  } = useData()
   const navigate = useNavigate()
   const { profile, user } = useAuth()
   const referee = profiles.find((item) => item.ownerUid === user?.uid)
@@ -103,6 +179,21 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
       app.status !== 'declined',
   )
   const openEvents = CONTENT_EVENTS.filter((item) => item.applicationsOpen)
+  const formDefinition = resolveEventApplicationForm(
+    event,
+    eventApplicationForms.find((form) => form.eventSlug === event.slug),
+  )
+  const questions = new Map(
+    formDefinition.questions.map((question) => [question.id, question]),
+  )
+  const question = (id: string) => {
+    const item = questions.get(id)
+    if (!item) throw new Error(`Missing application question: ${id}`)
+    return item
+  }
+  const customQuestions = formDefinition.questions.filter(
+    (item) => !isCoreApplicationQuestion(item.id),
+  )
 
   if (existing) {
     return (
@@ -144,10 +235,14 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
         (division) => fd.get(`division_${division}`) === 'on',
       )
 
-      if (positions.length === 0) {
+      if (question('positions').required && positions.length === 0) {
         throw new Error('Select at least one role.')
       }
-      if (event.divisions.length > 0 && divisionCodes.length === 0) {
+      if (
+        question('divisionCodes').required &&
+        event.divisions.length > 0 &&
+        divisionCodes.length === 0
+      ) {
         throw new Error('Select at least one division.')
       }
 
@@ -161,6 +256,29 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
       ) as HighestCompetition
       const otherDetail = String(fd.get('highestSevensCompetitionOther') || '')
       const footageRaw = String(fd.get('matchFootageUrl') || '').trim()
+      const answers: Record<string, string | number | string[]> = {}
+      for (const item of customQuestions) {
+        const fieldName = `answer_${item.id}`
+        const value =
+          item.type === 'checkboxes'
+            ? fd.getAll(fieldName).map(String)
+            : String(fd.get(fieldName) ?? '').trim()
+        const empty = Array.isArray(value) ? value.length === 0 : value === ''
+        if (item.required && empty) {
+          throw new Error(`Answer “${item.label}” before submitting.`)
+        }
+        if (!empty) {
+          if (item.type === 'number') {
+            const number = Number(value)
+            if (!Number.isFinite(number)) {
+              throw new Error(`Enter a valid number for “${item.label}”.`)
+            }
+            answers[item.id] = number
+          } else {
+            answers[item.id] = value
+          }
+        }
+      }
 
       await submitEventApplication({
         id: newId(),
@@ -195,6 +313,12 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
         highestSevensNotes:
           String(fd.get('highestSevensNotes') || '').trim() || undefined,
         matchFootageUrl: footageRaw ? normalizeHttpUrl(footageRaw) : undefined,
+        answers: Object.keys(answers).length ? answers : undefined,
+        questionSnapshot: customQuestions.map((item) => ({
+          id: item.id,
+          label: item.label,
+          type: item.type,
+        })),
         status: 'submitted',
         submittedByUid: user.uid,
         createdAt: new Date().toISOString(),
@@ -252,20 +376,28 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
         />
 
         <div className="apply-form__row">
-          <Field label="First name" htmlFor="firstName">
+          <Field
+            label={question('firstName').label}
+            htmlFor="firstName"
+            hint={question('firstName').hint}
+          >
             <TextInput
               id="firstName"
               name="firstName"
-              required
+              required={question('firstName').required}
               maxLength={80}
               defaultValue={profile?.firstName ?? referee?.firstName ?? ''}
             />
           </Field>
-          <Field label="Last name" htmlFor="lastName">
+          <Field
+            label={question('lastName').label}
+            htmlFor="lastName"
+            hint={question('lastName').hint}
+          >
             <TextInput
               id="lastName"
               name="lastName"
-              required
+              required={question('lastName').required}
               maxLength={80}
               defaultValue={profile?.lastName ?? referee?.lastName ?? ''}
             />
@@ -273,49 +405,67 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
         </div>
 
         <div className="apply-form__row">
-          <Field label="Email address" htmlFor="email">
+          <Field
+            label={question('email').label}
+            htmlFor="email"
+            hint={question('email').hint}
+          >
             <TextInput
               id="email"
               name="email"
               type="email"
-              required
+              required={question('email').required}
               defaultValue={defaultEmail}
             />
           </Field>
-          <Field label="Phone number" htmlFor="phone">
-            <TextInput id="phone" name="phone" type="tel" required />
+          <Field
+            label={question('phone').label}
+            htmlFor="phone"
+            hint={question('phone').hint}
+          >
+            <TextInput
+              id="phone"
+              name="phone"
+              type="tel"
+              required={question('phone').required}
+            />
           </Field>
         </div>
 
         <div className="apply-form__row">
           <Field
-            label="Instagram"
+            label={question('instagram').label}
             htmlFor="instagram"
-            hint="Optional · handle or URL"
+            hint={question('instagram').hint}
           >
             <TextInput
               id="instagram"
               name="instagram"
               placeholder="@yourhandle"
               defaultValue={referee?.instagram ?? ''}
+              required={question('instagram').required}
             />
           </Field>
           <Field
-            label="Facebook"
+            label={question('facebook').label}
             htmlFor="facebook"
-            hint="Optional · page or URL"
+            hint={question('facebook').hint}
           >
-            <TextInput id="facebook" name="facebook" />
+            <TextInput
+              id="facebook"
+              name="facebook"
+              required={question('facebook').required}
+            />
           </Field>
         </div>
 
         <fieldset className="apply-fieldset">
-          <legend>Mailing address</legend>
+          <legend>{question('mailingAddress').label}</legend>
           <Field label="Street" htmlFor="street">
             <TextInput
               id="street"
               name="street"
-              required
+              required={question('mailingAddress').required}
               autoComplete="street-address"
             />
           </Field>
@@ -324,7 +474,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
               <TextInput
                 id="city"
                 name="city"
-                required
+                required={question('mailingAddress').required}
                 autoComplete="address-level2"
                 defaultValue={referee?.city ?? ''}
               />
@@ -333,7 +483,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
               <TextInput
                 id="state"
                 name="state"
-                required
+                required={question('mailingAddress').required}
                 autoComplete="address-level1"
                 defaultValue={referee?.region ?? ''}
               />
@@ -344,7 +494,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
               <TextInput
                 id="postalCode"
                 name="postalCode"
-                required
+                required={question('mailingAddress').required}
                 autoComplete="postal-code"
               />
             </Field>
@@ -352,7 +502,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
               <TextInput
                 id="country"
                 name="country"
-                required
+                required={question('mailingAddress').required}
                 defaultValue="United States"
                 autoComplete="country-name"
               />
@@ -362,7 +512,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
 
         <div className="apply-form__row">
           <Field
-            label="Years of officiating experience"
+            label={question('yearsOfficiating').label}
             htmlFor="yearsOfficiating"
           >
             <TextInput
@@ -372,7 +522,7 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
               min={0}
               max={80}
               step={1}
-              required
+              required={question('yearsOfficiating').required}
               defaultValue={
                 referee?.yearsOfficiating != null
                   ? String(referee.yearsOfficiating)
@@ -381,14 +531,15 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
             />
           </Field>
           <Field
-            label="Referee grade"
+            label={question('refereeGrade').label}
             htmlFor="refereeGrade"
-            hint="If known — optional"
+            hint={question('refereeGrade').hint}
           >
             <TextInput
               id="refereeGrade"
               name="refereeGrade"
               defaultValue={referee?.grade ?? ''}
+              required={question('refereeGrade').required}
             />
           </Field>
         </div>
@@ -396,10 +547,10 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
         <div className="apply-form__row apply-form__row--align-start">
           {event.divisions.length ? (
             <fieldset className="apply-fieldset">
-              <legend>Divisions interested in</legend>
+              <legend>{question('divisionCodes').label}</legend>
               <p className="apply-fieldset__hint">
-                These brackets are for {event.title}. They change with the
-                tournament.
+                {question('divisionCodes').hint ||
+                  `These brackets are for ${event.title}.`}
               </p>
               <div className="apply-checks">
                 {event.divisions.map((division) => (
@@ -412,7 +563,12 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
             </fieldset>
           ) : null}
           <fieldset className="apply-fieldset">
-            <legend>Role(s)</legend>
+            <legend>{question('positions').label}</legend>
+            {question('positions').hint ? (
+              <p className="apply-fieldset__hint">
+                {question('positions').hint}
+              </p>
+            ) : null}
             <div className="apply-checks">
               {EVENT_CREW_ROLES.map((role) => (
                 <label key={role} className="apply-check">
@@ -429,22 +585,27 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
         </div>
 
         <div className="apply-form__row">
-          <Field label="Referee society" htmlFor="refereeSociety">
+          <Field
+            label={question('refereeSociety').label}
+            htmlFor="refereeSociety"
+            hint={question('refereeSociety').hint}
+          >
             <TextInput
               id="refereeSociety"
               name="refereeSociety"
-              required
+              required={question('refereeSociety').required}
               defaultValue={referee?.society ?? ''}
             />
           </Field>
           <Field
-            label="Recommendation contact"
+            label={question('recommendationContact').label}
             htmlFor="recommendationContact"
-            hint="Optional — name and phone or email"
+            hint={question('recommendationContact').hint}
           >
             <TextInput
               id="recommendationContact"
               name="recommendationContact"
+              required={question('recommendationContact').required}
             />
           </Field>
         </div>
@@ -457,13 +618,14 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
             was local only or a higher tier.
           </p>
           <Field
-            label={`Highest ${formatNoun} competition`}
+            label={question('highestSevensCompetition').label}
             htmlFor="highestSevensCompetition"
+            hint={question('highestSevensCompetition').hint}
           >
             <TextSelect
               id="highestSevensCompetition"
               name="highestSevensCompetition"
-              required
+              required={question('highestSevensCompetition').required}
               value={competition}
               onChange={(e) =>
                 setCompetition(e.target.value as HighestCompetition)
@@ -492,14 +654,14 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
             <input type="hidden" name="highestSevensCompetitionOther" value="" />
           )}
           <Field
-            label="At what level / scope"
+            label={question('highestSevensScope').label}
             htmlFor="highestSevensScope"
-            hint="Was that appointment local, regional, national, or international?"
+            hint={question('highestSevensScope').hint}
           >
             <TextSelect
               id="highestSevensScope"
               name="highestSevensScope"
-              required
+              required={question('highestSevensScope').required}
               defaultValue={referee?.highestScope || 'local'}
             >
               {COMPETITION_LEVELS.map((scope) => (
@@ -510,18 +672,22 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
             </TextSelect>
           </Field>
           <Field
-            label={`More detail on ${formatNoun} experience`}
+            label={question('highestSevensNotes').label}
             htmlFor="highestSevensNotes"
-            hint="Optional — events, years, or notable appointments"
+            hint={question('highestSevensNotes').hint}
           >
-            <TextTextarea id="highestSevensNotes" name="highestSevensNotes" />
+            <TextTextarea
+              id="highestSevensNotes"
+              name="highestSevensNotes"
+              required={question('highestSevensNotes').required}
+            />
           </Field>
         </fieldset>
 
         <Field
-          label="Match footage link"
+          label={question('matchFootageUrl').label}
           htmlFor="matchFootageUrl"
-          hint={`Optional — preferably ${formatNoun} (YouTube, Hudl, Google Drive, etc.)`}
+          hint={question('matchFootageUrl').hint}
         >
           <TextInput
             id="matchFootageUrl"
@@ -529,8 +695,17 @@ export function EventApplyForm({ event }: { event: ContentEvent }) {
             type="url"
             placeholder="https://"
             defaultValue={footageDefault}
+            required={question('matchFootageUrl').required}
           />
         </Field>
+        {customQuestions.length ? (
+          <fieldset className="apply-fieldset">
+            <legend>Additional questions</legend>
+            {customQuestions.map((item) => (
+              <CustomApplicationQuestion key={item.id} question={item} />
+            ))}
+          </fieldset>
+        ) : null}
         <p className="apply-form__fine">
           By submitting you acknowledge the event{' '}
           <Link to="/terms">terms</Link> and{' '}

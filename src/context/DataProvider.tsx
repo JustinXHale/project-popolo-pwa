@@ -33,6 +33,7 @@ import type {
   ContactMessageDoc,
   DocumentDoc,
   EventApplicationDoc,
+  EventApplicationFormDoc,
   EventApplicationStatus,
   GameDoc,
   MediaSubmissionDoc,
@@ -55,6 +56,7 @@ function emptyData(): PopoloData {
     requests: [],
     messages: [],
     eventApplications: [],
+    eventApplicationForms: [],
     sitePages: mergeSitePages(),
   }
 }
@@ -73,6 +75,7 @@ function readDemo(): PopoloData {
       requests: parsed.requests ?? [],
       messages: parsed.messages ?? [],
       eventApplications: parsed.eventApplications ?? [],
+      eventApplicationForms: parsed.eventApplicationForms ?? [],
       sitePages: mergeSitePages(parsed.sitePages),
     }
   } catch {
@@ -200,6 +203,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
           sitePages: mergeSitePages(
             snap.data()?.pages as Partial<Record<SitePageKey, boolean>> | undefined,
           ),
+        }))
+      }),
+    )
+
+    unsub.push(
+      onSnapshot(cols.eventApplicationForms, (snap) => {
+        setData((prev) => ({
+          ...prev,
+          eventApplicationForms: snap.docs.map((item) => ({
+            ...item.data(),
+            eventSlug: item.id,
+          })),
         }))
       }),
     )
@@ -474,6 +489,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [demo, patch],
   )
 
+  const saveEventApplicationForm = useCallback(
+    async (form: EventApplicationFormDoc) => {
+      const next = { ...form, updatedAt: new Date().toISOString() }
+      if (demo) {
+        patch((prev) => ({
+          ...prev,
+          eventApplicationForms: [
+            next,
+            ...prev.eventApplicationForms.filter(
+              (item) => item.eventSlug !== next.eventSlug,
+            ),
+          ],
+        }))
+        return
+      }
+      await setDoc(
+        doc(db, 'eventApplicationForms', next.eventSlug),
+        stripUndefined(next),
+      )
+    },
+    [demo, patch],
+  )
+
   const updateSitePages = useCallback(
     async (pages: Partial<Record<SitePageKey, boolean>>) => {
       const apply = (prev: PopoloData) => ({
@@ -583,6 +621,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateRequestStatus,
       submitEventApplication,
       updateEventApplicationStatus,
+      saveEventApplicationForm,
       updateSitePages,
       submitContact,
       setUserRole: setUserRoleFn,
@@ -603,6 +642,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateRequestStatus,
       submitEventApplication,
       updateEventApplicationStatus,
+      saveEventApplicationForm,
       updateSitePages,
       submitContact,
       setUserRoleFn,
