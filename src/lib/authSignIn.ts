@@ -1,9 +1,7 @@
 import {
   GoogleAuthProvider,
   OAuthProvider,
-  createUserWithEmailAndPassword,
   getRedirectResult,
-  signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
   type AuthProvider,
@@ -67,28 +65,6 @@ export async function signInWithApplePopup(): Promise<User | null> {
   return signInWithProvider(appleProvider)
 }
 
-export async function signInWithEmail(
-  email: string,
-  password: string,
-): Promise<User> {
-  if (!isFirebaseConfigured) {
-    throw new Error('Firebase Auth is not configured.')
-  }
-  const result = await signInWithEmailAndPassword(auth, email, password)
-  return result.user
-}
-
-export async function registerWithEmail(
-  email: string,
-  password: string,
-): Promise<User> {
-  if (!isFirebaseConfigured) {
-    throw new Error('Firebase Auth is not configured.')
-  }
-  const result = await createUserWithEmailAndPassword(auth, email, password)
-  return result.user
-}
-
 export async function completeRedirectSignIn(): Promise<User | null> {
   if (!isFirebaseConfigured) return null
   const result = await getRedirectResult(auth)
@@ -96,7 +72,7 @@ export async function completeRedirectSignIn(): Promise<User | null> {
 }
 
 export function authErrorMessage(
-  provider: 'Google' | 'Apple' | 'Email',
+  provider: 'Google' | 'Apple',
   err: unknown,
 ): string {
   const code =
@@ -117,15 +93,6 @@ export function authErrorMessage(
   }
   if (code === 'auth/unauthorized-domain') {
     return 'This domain is not authorized for Firebase Auth.'
-  }
-  if (code === 'auth/email-already-in-use') {
-    return 'An account already exists for that email. Sign in instead.'
-  }
-  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
-    return 'Email or password is incorrect.'
-  }
-  if (code === 'auth/weak-password') {
-    return 'Use a password of at least 6 characters.'
   }
   return message
 }

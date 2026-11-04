@@ -9,10 +9,6 @@
   margin-top: var(--space-4);
 }
 
-.auth-page__form {
-  margin-top: var(--space-5);
-}
-
 .auth-page__name-row {
   display: grid;
   gap: var(--space-3);

@@ -21,14 +21,11 @@ import { auth, db, isDemoMode, masterAdminEmail } from '../lib/firebase'
 import {
   authErrorMessage,
   completeRedirectSignIn,
-  registerWithEmail,
   signInWithApplePopup,
-  signInWithEmail,
   signInWithGooglePopup,
 } from '../lib/authSignIn'
 import {
   AuthContext,
-  type DemoSignInRole,
   type OnboardingInput,
 } from './auth-context'
 import {
@@ -231,7 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signInDemoAs = useCallback(
-    async (role: DemoSignInRole) => {
+    async (role: UserRole) => {
       setAuthError(null)
       const names =
         role === 'admin'
@@ -277,34 +274,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw err
     }
   }, [demo, signInDemoAs])
-
-  const signInWithEmailPassword = useCallback(
-    async (email: string, password: string) => {
-      setAuthError(null)
-      if (demo) return signInDemoAs('referee')
-      try {
-        return await signInWithEmail(email, password)
-      } catch (err) {
-        setAuthError(authErrorMessage('Email', err))
-        throw err
-      }
-    },
-    [demo, signInDemoAs],
-  )
-
-  const registerWithEmailPassword = useCallback(
-    async (email: string, password: string) => {
-      setAuthError(null)
-      if (demo) return signInDemoAs('referee')
-      try {
-        return await registerWithEmail(email, password)
-      } catch (err) {
-        setAuthError(authErrorMessage('Email', err))
-        throw err
-      }
-    },
-    [demo, signInDemoAs],
-  )
 
   const completeOnboarding = useCallback(
     async (input: OnboardingInput) => {
@@ -384,9 +353,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authError,
       signInWithGoogle,
       signInWithApple,
-      signInWithEmailPassword,
-      registerWithEmailPassword,
-      signInDemoAs,
       completeOnboarding,
       clearAuthError,
       signOut,
@@ -402,9 +368,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authError,
       signInWithGoogle,
       signInWithApple,
-      signInWithEmailPassword,
-      registerWithEmailPassword,
-      signInDemoAs,
       completeOnboarding,
       clearAuthError,
       signOut,

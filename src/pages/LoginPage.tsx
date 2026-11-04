@@ -1,7 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Button, ButtonLink } from '../components/ui/Button'
-import { Field, TextInput } from '../components/ui/Field'
 import {
   AppleSignInButton,
   GoogleSignInButton,
@@ -25,18 +24,12 @@ export function LoginPage() {
     authError,
     signInWithGoogle,
     signInWithApple,
-    signInWithEmailPassword,
-    registerWithEmailPassword,
-    signInDemoAs,
     signOut,
     clearAuthError,
   } = useAuth()
   const [params] = useSearchParams()
   const next = params.get('next')
   const [pending, setPending] = useState<string | null>(null)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'signin' | 'register'>('signin')
 
   if (!loading && user && next) {
     return <Navigate to={safeNextPath(next, role)} replace />
@@ -91,21 +84,6 @@ export function LoginPage() {
     }
   }
 
-  async function handleEmail(e: FormEvent) {
-    e.preventDefault()
-    clearAuthError()
-    setPending('email')
-    try {
-      if (mode === 'register') {
-        await registerWithEmailPassword(email, password)
-      } else {
-        await signInWithEmailPassword(email, password)
-      }
-    } catch {
-      setPending(null)
-    }
-  }
-
   return (
     <div className="container section auth-page">
       <h1>Sign in</h1>
@@ -115,26 +93,10 @@ export function LoginPage() {
       </p>
       {isDemoAuth ? (
         <div className="auth-page__demo">
-          <p>Demo mode — Firebase keys are not set. Try a local role:</p>
-          <div className="auth-page__actions">
-            <Button size="sm" onClick={() => void signInDemoAs('referee')}>
-              Referee
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => void signInDemoAs('coach')}
-            >
-              Coach
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => void signInDemoAs('admin')}
-            >
-              Admin
-            </Button>
-          </div>
+          <p>
+            Demo mode — Firebase keys are not set. Either provider will open a
+            local referee account.
+          </p>
         </div>
       ) : null}
       {authError ? (
@@ -145,57 +107,18 @@ export function LoginPage() {
       {loading ? (
         <p>Checking session…</p>
       ) : (
-        <>
-          <div className="auth-page__providers" role="group" aria-label="Sign in">
-            <GoogleSignInButton
-              busy={pending === 'google'}
-              disabled={pending !== null}
-              onClick={() => void handleSocial('google')}
-            />
-            <AppleSignInButton
-              busy={pending === 'apple'}
-              disabled={pending !== null}
-              onClick={() => void handleSocial('apple')}
-            />
-          </div>
-          <form className="auth-page__form" onSubmit={(e) => void handleEmail(e)}>
-            <Field label="Email" htmlFor="email">
-              <TextInput
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Password" htmlFor="password">
-              <TextInput
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </Field>
-            <Button type="submit" disabled={pending !== null}>
-              {mode === 'register' ? 'Create account' : 'Sign in with email'}
-            </Button>
-            <p className="auth-page__fine">
-              <button
-                type="button"
-                className="btn btn--ghost btn--sm"
-                onClick={() =>
-                  setMode((m) => (m === 'signin' ? 'register' : 'signin'))
-                }
-              >
-                {mode === 'register'
-                  ? 'Already have an account? Sign in'
-                  : 'Need an account? Register'}
-              </button>
-            </p>
-          </form>
-        </>
+        <div className="auth-page__providers" role="group" aria-label="Sign in">
+          <GoogleSignInButton
+            busy={pending === 'google'}
+            disabled={pending !== null}
+            onClick={() => void handleSocial('google')}
+          />
+          <AppleSignInButton
+            busy={pending === 'apple'}
+            disabled={pending !== null}
+            onClick={() => void handleSocial('apple')}
+          />
+        </div>
       )}
       <p className="auth-page__fine">
         By continuing you agree to the <Link to="/terms">Terms</Link> and{' '}

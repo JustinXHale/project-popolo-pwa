@@ -10,7 +10,7 @@ npm install --prefix functions
 npm run dev
 ```
 
-Without `.env.local`, the app runs in **demo mode**. On `/login` you can sign in as referee, coach, or admin.
+Without `.env.local`, the app runs in **demo mode**. On `/login`, either provider button opens a local referee account.
 
 Copy `.env.example` to `.env.local` when you have a Firebase project.
 
@@ -24,7 +24,7 @@ See [docs/CONTENT.md](docs/CONTENT.md).
 
 ## Firebase
 
-Create a project (this repo expects `projectpopolo`), enable Auth (Google, Apple, email/password), Firestore, Storage, and App Check (reCAPTCHA v3). Set `MASTER_ADMIN_EMAIL` on Cloud Functions to your login email. Blaze is required for Functions; App Check itself is no-cost.
+Create a project (this repo expects `projectpopolo`), enable Auth (Google and Apple only), Firestore, Storage, and App Check (reCAPTCHA v3). Set `MASTER_ADMIN_EMAIL` on Cloud Functions to your login email. Blaze is required for Functions; App Check itself is no-cost.
 
 ```bash
 npm run deploy

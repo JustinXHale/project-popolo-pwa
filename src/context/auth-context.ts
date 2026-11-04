@@ -8,8 +8,6 @@ export interface OnboardingInput {
   birthday: string
 }
 
-export type DemoSignInRole = UserRole
-
 export interface AuthContextValue {
   user: User | null
   profile: UserDoc | null
@@ -20,15 +18,6 @@ export interface AuthContextValue {
   authError: string | null
   signInWithGoogle: () => Promise<User | null>
   signInWithApple: () => Promise<User | null>
-  signInWithEmailPassword: (
-    email: string,
-    password: string,
-  ) => Promise<User | null>
-  registerWithEmailPassword: (
-    email: string,
-    password: string,
-  ) => Promise<User | null>
-  signInDemoAs: (role: DemoSignInRole) => Promise<User | null>
   completeOnboarding: (input: OnboardingInput) => Promise<void>
   clearAuthError: () => void
   signOut: () => Promise<void>
