@@ -484,7 +484,12 @@ export function AdminSitePages() {
   )
 }
 
-type EventApplicationSortKey = 'name' | 'event' | 'society' | 'status'
+type EventApplicationSortKey =
+  | 'name'
+  | 'event'
+  | 'submitted'
+  | 'society'
+  | 'status'
 type SortDirection = 'ascending' | 'descending'
 type EmailApplicantGroup = EventApplicationStatus | 'all'
 
@@ -513,7 +518,7 @@ function SortableApplicationHeader({
 }: {
   label: string
   column: EventApplicationSortKey
-  sortKey: EventApplicationSortKey | 'createdAt'
+  sortKey: EventApplicationSortKey
   direction: SortDirection
   onSort: (column: EventApplicationSortKey) => void
   className?: string
@@ -671,9 +676,8 @@ function AdminEventApplicationsList() {
   const [statusFilter, setStatusFilter] = useState<
     EventApplicationStatus | 'all'
   >('all')
-  const [sortKey, setSortKey] = useState<
-    EventApplicationSortKey | 'createdAt'
-  >('createdAt')
+  const [sortKey, setSortKey] =
+    useState<EventApplicationSortKey>('submitted')
   const [sortDirection, setSortDirection] =
     useState<SortDirection>('descending')
   const [emailModalOpen, setEmailModalOpen] = useState(false)
@@ -690,7 +694,7 @@ function AdminEventApplicationsList() {
     )
     .sort((a, b) => {
       let comparison = 0
-      if (sortKey === 'createdAt') {
+      if (sortKey === 'submitted') {
         comparison = a.createdAt.localeCompare(b.createdAt)
       } else if (sortKey === 'name') {
         comparison = `${a.lastName} ${a.firstName}`.localeCompare(
@@ -788,6 +792,15 @@ function AdminEventApplicationsList() {
       ) : (
         <div className="table-scroll">
           <table className="admin-table admin-event-apps__table">
+            <colgroup>
+              <col className="admin-event-apps__col--name" />
+              <col className="admin-event-apps__col--event" />
+              <col className="admin-event-apps__col--submitted" />
+              <col className="admin-event-apps__col--society" />
+              <col className="admin-event-apps__col--status" />
+              <col className="admin-event-apps__col--view" />
+              <col className="admin-event-apps__col--email" />
+            </colgroup>
             <thead>
               <tr>
                 <SortableApplicationHeader
@@ -800,6 +813,13 @@ function AdminEventApplicationsList() {
                 <SortableApplicationHeader
                   label="Event"
                   column="event"
+                  sortKey={sortKey}
+                  direction={sortDirection}
+                  onSort={sortBy}
+                />
+                <SortableApplicationHeader
+                  label="Submitted"
+                  column="submitted"
                   sortKey={sortKey}
                   direction={sortDirection}
                   onSort={sortBy}
@@ -838,6 +858,13 @@ function AdminEventApplicationsList() {
                     {app.firstName} {app.lastName}
                   </td>
                   <td>{app.eventTitle}</td>
+                  <td>
+                    {new Date(app.createdAt).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </td>
                   <td className="admin-event-apps__society">
                     <span title={app.refereeSociety || undefined}>
                       {app.refereeSociety || '—'}

@@ -116,8 +116,13 @@
 }
 
 .admin-event-apps__table {
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
+  min-width: 78rem;
+  table-layout: fixed;
+}
+
+.admin-event-apps__table col {
+  width: calc(100% / 7);
 }
 
 .admin-event-apps__sort {
@@ -139,26 +144,24 @@
 }
 
 .admin-event-apps__society {
-  width: 8ch;
-  max-width: 8ch;
+  overflow: hidden;
 }
 
 td.admin-event-apps__society > span {
   display: block;
-  width: 8ch;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .admin-event-apps__status {
-  width: 10rem;
-  min-width: 10rem;
+  min-width: 0;
 }
 
 td.admin-event-apps__status .field__control {
   width: 100%;
-  min-width: 8.5rem;
+  min-width: 0;
 }
 
 .admin-table__row--accepted td {
@@ -513,11 +516,6 @@ td.admin-event-apps__status .field__control {
 
   .admin-event-apps__email-group {
     align-content: initial;
-  }
-
-  .admin-event-apps__status {
-    width: 9rem;
-    min-width: 9rem;
   }
 
   .admin-form-builder__row,
