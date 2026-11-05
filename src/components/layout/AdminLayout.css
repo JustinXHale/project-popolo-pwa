@@ -93,7 +93,7 @@
 
 .admin-event-apps__filters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(12rem, 18rem));
+  grid-template-columns: repeat(2, minmax(12rem, 18rem)) minmax(12rem, auto);
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
@@ -102,8 +102,167 @@
   margin-bottom: 0;
 }
 
+.admin-event-apps__email-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: end;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+}
+
+.admin-event-apps__email-group span {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.admin-event-apps__table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.admin-event-apps__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.admin-event-apps__sort span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.admin-event-apps__society {
+  width: 8ch;
+  max-width: 8ch;
+}
+
+td.admin-event-apps__society > span {
+  display: block;
+  width: 8ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-event-apps__status {
+  width: 10rem;
+  min-width: 10rem;
+}
+
+td.admin-event-apps__status .field__control {
+  width: 100%;
+  min-width: 8.5rem;
+}
+
 .admin-table__row--accepted td {
   background: color-mix(in srgb, #2e7d32 22%, var(--color-bg-elevated));
+}
+
+.admin-email-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: end center;
+}
+
+.admin-email-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: var(--color-overlay);
+}
+
+.admin-email-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(36rem, 100%);
+  max-height: 92vh;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 12px 12px 0 0;
+  background: var(--color-bg-elevated);
+}
+
+.admin-email-modal__panel header,
+.admin-email-modal__panel > p,
+.admin-email-modal__groups,
+.admin-email-modal__panel footer {
+  padding: 1rem 1.25rem;
+}
+
+.admin-email-modal__panel header {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-email-modal__panel h2,
+.admin-email-modal__panel > p {
+  margin: 0;
+}
+
+.admin-email-modal__panel > p {
+  color: var(--color-text-secondary);
+}
+
+.admin-email-modal__groups {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.admin-email-modal__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-email-modal__group:last-child {
+  border-bottom: 0;
+}
+
+.admin-email-modal__group label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+}
+
+.admin-email-modal__group input {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.admin-email-modal__copy {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-brand-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.admin-email-modal__copy:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.admin-email-modal__panel footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .admin-subtabs {
@@ -352,6 +511,15 @@
     grid-template-columns: 1fr;
   }
 
+  .admin-event-apps__email-group {
+    align-content: initial;
+  }
+
+  .admin-event-apps__status {
+    width: 9rem;
+    min-width: 9rem;
+  }
+
   .admin-form-builder__row,
   .admin-form-builder__row--3 {
     grid-template-columns: 1fr;
@@ -359,6 +527,15 @@
 }
 
 @media (min-width: 801px) {
+  .admin-email-modal {
+    place-items: center;
+    padding: 1.5rem;
+  }
+
+  .admin-email-modal__panel {
+    border-radius: 12px;
+  }
+
   .admin-detail {
     place-items: center;
     padding: 1.5rem;

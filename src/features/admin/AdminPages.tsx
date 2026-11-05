@@ -484,6 +484,186 @@ export function AdminSitePages() {
   )
 }
 
+type EventApplicationSortKey = 'name' | 'event' | 'society' | 'status'
+type SortDirection = 'ascending' | 'descending'
+type EmailApplicantGroup = EventApplicationStatus | 'all'
+
+async function copyText(value: string) {
+  try {
+    await navigator.clipboard.writeText(value)
+  } catch {
+    const input = document.createElement('textarea')
+    input.value = value
+    input.style.position = 'fixed'
+    input.style.opacity = '0'
+    document.body.appendChild(input)
+    input.select()
+    document.execCommand('copy')
+    input.remove()
+  }
+}
+
+function SortableApplicationHeader({
+  label,
+  column,
+  sortKey,
+  direction,
+  onSort,
+  className,
+}: {
+  label: string
+  column: EventApplicationSortKey
+  sortKey: EventApplicationSortKey | 'createdAt'
+  direction: SortDirection
+  onSort: (column: EventApplicationSortKey) => void
+  className?: string
+}) {
+  const active = sortKey === column
+  return (
+    <th
+      className={className}
+      aria-sort={active ? direction : 'none'}
+    >
+      <button
+        type="button"
+        className="admin-event-apps__sort"
+        onClick={() => onSort(column)}
+      >
+        {label}
+        <span aria-hidden>{active ? (direction === 'ascending' ? '↑' : '↓') : '↕'}</span>
+      </button>
+    </th>
+  )
+}
+
+function EmailApplicantsModal({
+  applications,
+  eventName,
+  initialGroup,
+  onClose,
+}: {
+  applications: EventApplicationDoc[]
+  eventName: string
+  initialGroup: EmailApplicantGroup
+  onClose: () => void
+}) {
+  const [group, setGroup] = useState<EmailApplicantGroup>(initialGroup)
+  const [copiedGroup, setCopiedGroup] =
+    useState<EmailApplicantGroup | null>(null)
+  const groups: Array<{ value: EmailApplicantGroup; label: string }> = [
+    { value: 'all', label: 'All applicants' },
+    ...EVENT_APPLICATION_STATUSES.map((status) => ({
+      value: status,
+      label: EVENT_APPLICATION_STATUS_LABELS[status],
+    })),
+  ]
+
+  function applicationsFor(value: EmailApplicantGroup) {
+    return value === 'all'
+      ? applications
+      : applications.filter((application) => application.status === value)
+  }
+
+  function addressesFor(value: EmailApplicantGroup) {
+    return [
+      ...new Set(
+        applicationsFor(value)
+          .map((application) => application.email.trim())
+          .filter(Boolean),
+      ),
+    ]
+  }
+
+  async function copyAddresses(value: EmailApplicantGroup) {
+    const addresses = addressesFor(value)
+    if (!addresses.length) return
+    await copyText(addresses.join(', '))
+    setCopiedGroup(value)
+    window.setTimeout(() => setCopiedGroup(null), 1600)
+  }
+
+  function openEmail() {
+    const addresses = addressesFor(group)
+    if (!addresses.length) return
+    const groupLabel =
+      group === 'all'
+        ? 'applicants'
+        : `${EVENT_APPLICATION_STATUS_LABELS[group]} applicants`
+    const subject = `${eventName} — ${groupLabel}`
+    window.location.href = `mailto:?bcc=${encodeURIComponent(addresses.join(','))}&subject=${encodeURIComponent(subject)}`
+  }
+
+  return (
+    <div
+      className="admin-email-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="email-applicants-title"
+    >
+      <button
+        type="button"
+        className="admin-email-modal__backdrop"
+        aria-label="Close email applicants"
+        onClick={onClose}
+      />
+      <div className="admin-email-modal__panel">
+        <header>
+          <h2 id="email-applicants-title">Email applicants</h2>
+        </header>
+        <p>
+          Choose a status group for {eventName}. Open email fills recipients in
+          BCC, or copy the addresses into your preferred email app.
+        </p>
+        <div className="admin-email-modal__groups">
+          {groups.map((option, index) => {
+            const count = applicationsFor(option.value).length
+            return (
+              <div className="admin-email-modal__group" key={option.value}>
+                <label>
+                  <input
+                    type="radio"
+                    name="email-applicant-group"
+                    value={option.value}
+                    checked={group === option.value}
+                    disabled={count === 0}
+                    autoFocus={index === 0}
+                    onChange={() => setGroup(option.value)}
+                  />
+                  <span>
+                    {option.label} ({count})
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  className="admin-email-modal__copy"
+                  disabled={count === 0}
+                  onClick={() => void copyAddresses(option.value)}
+                >
+                  {copiedGroup === option.value
+                    ? 'Addresses copied'
+                    : 'Copy addresses'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+        <footer>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            disabled={addressesFor(group).length === 0}
+            onClick={openEmail}
+          >
+            Open email
+          </Button>
+        </footer>
+      </div>
+    </div>
+  )
+}
+
 function AdminEventApplicationsList() {
   const { eventApplications, updateEventApplicationStatus } = useData()
   const [selected, setSelected] = useState<EventApplicationDoc | null>(null)
@@ -491,6 +671,12 @@ function AdminEventApplicationsList() {
   const [statusFilter, setStatusFilter] = useState<
     EventApplicationStatus | 'all'
   >('all')
+  const [sortKey, setSortKey] = useState<
+    EventApplicationSortKey | 'createdAt'
+  >('createdAt')
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>('descending')
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
   const events = [
     ...new Map(
       eventApplications.map((app) => [app.eventSlug, app.eventTitle]),
@@ -502,8 +688,44 @@ function AdminEventApplicationsList() {
         (eventFilter === 'all' || app.eventSlug === eventFilter) &&
         (statusFilter === 'all' || app.status === statusFilter),
     )
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .sort((a, b) => {
+      let comparison = 0
+      if (sortKey === 'createdAt') {
+        comparison = a.createdAt.localeCompare(b.createdAt)
+      } else if (sortKey === 'name') {
+        comparison = `${a.lastName} ${a.firstName}`.localeCompare(
+          `${b.lastName} ${b.firstName}`,
+        )
+      } else if (sortKey === 'event') {
+        comparison = a.eventTitle.localeCompare(b.eventTitle)
+      } else if (sortKey === 'society') {
+        comparison = a.refereeSociety.localeCompare(b.refereeSociety)
+      } else {
+        comparison =
+          EVENT_APPLICATION_STATUSES.indexOf(a.status) -
+          EVENT_APPLICATION_STATUSES.indexOf(b.status)
+      }
+      return sortDirection === 'ascending' ? comparison : -comparison
+    })
   const open = rows.find((app) => app.id === selected?.id) ?? null
+  const emailApplications = eventApplications.filter(
+    (app) => eventFilter === 'all' || app.eventSlug === eventFilter,
+  )
+  const emailEventName =
+    eventFilter === 'all'
+      ? 'all events'
+      : events.find(([slug]) => slug === eventFilter)?.[1] || 'this event'
+
+  function sortBy(column: EventApplicationSortKey) {
+    if (sortKey === column) {
+      setSortDirection((current) =>
+        current === 'ascending' ? 'descending' : 'ascending',
+      )
+      return
+    }
+    setSortKey(column)
+    setSortDirection('ascending')
+  }
 
   return (
     <div>
@@ -547,6 +769,17 @@ function AdminEventApplicationsList() {
             ))}
           </TextSelect>
         </Field>
+        <div className="admin-event-apps__email-group">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={emailApplications.length === 0}
+            onClick={() => setEmailModalOpen(true)}
+          >
+            Email applicants ({emailApplications.length})
+          </Button>
+          <span>Choose a status group, copy addresses, or open email.</span>
+        </div>
       </div>
       {eventApplications.length === 0 ? (
         <p>No referee applications yet.</p>
@@ -554,13 +787,39 @@ function AdminEventApplicationsList() {
         <p>No applications match these filters.</p>
       ) : (
         <div className="table-scroll">
-          <table className="admin-table">
+          <table className="admin-table admin-event-apps__table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Event</th>
-                <th>Society</th>
-                <th>Status</th>
+                <SortableApplicationHeader
+                  label="Name"
+                  column="name"
+                  sortKey={sortKey}
+                  direction={sortDirection}
+                  onSort={sortBy}
+                />
+                <SortableApplicationHeader
+                  label="Event"
+                  column="event"
+                  sortKey={sortKey}
+                  direction={sortDirection}
+                  onSort={sortBy}
+                />
+                <SortableApplicationHeader
+                  label="Society"
+                  column="society"
+                  sortKey={sortKey}
+                  direction={sortDirection}
+                  onSort={sortBy}
+                  className="admin-event-apps__society"
+                />
+                <SortableApplicationHeader
+                  label="Status"
+                  column="status"
+                  sortKey={sortKey}
+                  direction={sortDirection}
+                  onSort={sortBy}
+                  className="admin-event-apps__status"
+                />
                 <th></th>
                 <th>Email</th>
               </tr>
@@ -579,8 +838,12 @@ function AdminEventApplicationsList() {
                     {app.firstName} {app.lastName}
                   </td>
                   <td>{app.eventTitle}</td>
-                  <td>{app.refereeSociety || '—'}</td>
-                  <td>
+                  <td className="admin-event-apps__society">
+                    <span title={app.refereeSociety || undefined}>
+                      {app.refereeSociety || '—'}
+                    </span>
+                  </td>
+                  <td className="admin-event-apps__status">
                     <TextSelect
                       aria-label={`Status for ${app.firstName} ${app.lastName}`}
                       value={app.status}
@@ -623,6 +886,14 @@ function AdminEventApplicationsList() {
             void updateEventApplicationStatus(open.id, status)
           }
           onClose={() => setSelected(null)}
+        />
+      ) : null}
+      {emailModalOpen ? (
+        <EmailApplicantsModal
+          applications={emailApplications}
+          eventName={emailEventName}
+          initialGroup={statusFilter}
+          onClose={() => setEmailModalOpen(false)}
         />
       ) : null}
     </div>
